@@ -1,3 +1,3 @@
 # line-notification
 
-LineBotTinyはLINE Developerのリファレンスにあった参考用のファイルです。
+LineBotTiny.phpはLINE Developerのリファレンスにあった参考用のファイルです。
