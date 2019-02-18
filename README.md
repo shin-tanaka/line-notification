@@ -1,4 +1,7 @@
 # line-notification
 
-LineBotTiny.phpはLINE Developerのリファレンスにあった参考用のファイルです。
-(私が作ったものではありません)
+LINEのbotに
+- タイトル
+- 通知日時
+- 内容
+を送信すると、指定の通知時間にリマインドしてくれるbotを開発しています。
