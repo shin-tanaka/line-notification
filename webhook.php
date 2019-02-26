@@ -11,16 +11,6 @@ $client = new MessagingAPI($channelAccessToken, $channelSecret);
 
 $event = $client->getEvent();
 
-//MessagingAPIのテスト用コード
-$id = 'U302427d6207fd5906e68e7d1d172bad5';
-$userId = $event['source']['userId'];
-$message = $event['message']['text'];
-$client->pushMessage($id, $userId);
-
-http_response_code(200);
-
-
-
 $lineId = $event['source']['userId'];
 $message = $event['message']['text'];
 
