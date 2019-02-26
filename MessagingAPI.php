@@ -7,8 +7,8 @@ class MessagingAPI{
 	private $channelSecret;
 
 	public function __construct($channelAccessToken, $channelSecret){
-		this->channelAccessToken = $channelAccessToken;
-		this->channelSecret = $channelSecret;
+		$this->channelAccessToken = $channelAccessToken;
+		$this->channelSecret = $channelSecret;
 	}
 
 	//Webhookメッセージの取得
@@ -21,11 +21,12 @@ class MessagingAPI{
 		}
 
 		//署名検証を行う 不正ならexit()
-		if(!checkHash($message, $_SERVER['HTTP_X_LINE_SIGNATURE'])){
+		if(!$this->checkHash($message, $_SERVER['HTTP_X_LINE_SIGNATURE'])){
 			exit();
 		}
 
 		$data = json_decode($message, true);
+		return $data['events'];
 	}
 
 
@@ -33,22 +34,24 @@ class MessagingAPI{
 
 		$body = [
 			'to' => $userId,
-			'message' => [
-				'type' => 'text',
-				'text' => $message
+			'messages' => [
+				[
+					'type' => 'text',
+					'text' => $message
+				]
 			]
 		];
 
-		$header = array(
+		$header = [
 			'Content-Type: application/json',
-			'Authorization: Bearer' . $this->channelAccessToken
-		);
+			'Authorization: Bearer ' . $this->channelAccessToken
+		];
 
 		$context = stream_context_create([
 				'http' => [
 					'method' => 'POST',
 					'header' => implode("\r\n", $header),
-					'context' => $message;
+					'content' => json_encode($body)
 				]
 			]
 		);

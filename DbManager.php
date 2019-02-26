@@ -7,7 +7,7 @@ class DbManager{
 
 	public function __construct(){
 		$this->$dbinfo = parse_url(getenv('DATABASE_URL'));
-		$this->pdo = connectPostgreSQL(
+		connectPostgreSQL(
 			$this->dbinfo['host'],
 			substr($this->dbinfo['path'], 1),
 			$this->dbinfo['user'],
@@ -25,21 +25,21 @@ class DbManager{
 		}
 	}
 
-	private function initDb(){
+	public function initDb(){
 
-		$deleteTableSql = 'DROP TABLE IF EXISTS user, schedule;';
+		$deleteTableSql = 'DROP TABLE IF EXISTS users, schedules;';
 
-		$userTableSql = 'CREATE TABLE user (
-			userId  SERIAL PRIMARY KEY NOT NULL,
-			lineId  TEXT   NOT NULL);';
+		$userTableSql = 'CREATE TABLE users (
+			user_id  SERIAL PRIMARY KEY NOT NULL,
+			line_id  TEXT   NOT NULL);';
 
-		$scheduleTableSql = 'CREATE TABLE schedule (
-			scheduleId CHAR(8)   NOT NULL,
-			userId     INTEGER   PRIMARY KEY NOT NULL,
-			title      TEXT      NOT NULL,
-			todoTime   TIMESTAMP WITH TIME ZONE NOT NULL,
-			detail     TEXT,
-			postedAt   TIMESTAMP WITH TIME ZONE NOT NULL);';
+		$scheduleTableSql = 'CREATE TABLE schedules (
+			schedule_id CHAR(8)   NOT NULL,
+			user_id     INTEGER   NOT NULL,
+			title       TEXT      NOT NULL,
+			todo_time   TIMESTAMP WITH TIME ZONE NOT NULL,
+			detail      TEXT,
+			posted_at   TIMESTAMP WITH TIME ZONE NOT NULL);';
 
 		$this->pdo->query($deleteTableSql);
 		$this->pdo->query($userTableSql);
@@ -53,7 +53,7 @@ class DbManager{
 	*/
 	public function checkUser($lineId){
 
-		$findUserSql = 'SELECT * FROM user WHERE lineId= :lineId;';
+		$findUserSql = 'SELECT * FROM user WHERE line_id= :lineId;';
 
 		$stmt = $this->pdo->prepare($findUserSql);
 		$stmt->bindValue(':lineId', $lineId);
@@ -61,20 +61,20 @@ class DbManager{
 
 		//新規ユーザー登録
 		if(empty($stmt)){
-			addUser($lineId);
+			addUser($line_id);
 			$stmt = $this->pdo->prepare($findUserSql);
 		$stmt->bindValue(':lineId', $lineId);
 		$stmt->fetch();
 		}
 
-		return $stmt['lineId'];
+		return $stmt['line_id'];
 	}
 
 	/*
 		DB上にユーザーを追加する
 	*/
-	private function addUser($lineId){
-		$stmt = $this->pdo->prepare('INSERT INTO user (lineId) VALUES( :lineId );');
+	public function addUser($lineId){
+		$stmt = $this->pdo->prepare('INSERT INTO users (line_id) VALUES( :lineId );');
 		$stmt->bindValue(':lineId', $lineId);
 		$stmt->execute();
 	}
@@ -87,7 +87,7 @@ class DbManager{
 		-問い合わせNo.(スケジュールID)は,何らかの文字列を
 		'adler32'を使ってハッシュを求めて、それを使う(とにかく８文字に抑えたい)
 
-		$scheduleId = hash('adler32', "何らかの文字列"、false);
+		$scheduleId = hash('adler32', "何らかの文字列", false);
 		を使う
 
 		----------------------------------------------------------
@@ -97,16 +97,21 @@ class DbManager{
 		↑こんな感じ
 
 	*/
-	public function addSchedule($title, $time, $detail){
-		$stmt = $this->pdo->prepare( 'INSERT INTO schedule
-			(scheduleId, userId, title todoTime, detail)
-			VALUES(:scheduleId, :userId, :title, :todoTime, :detail)');
+	public function addSchedule($userId, $title, $time, $detail){
+		$stmt = $this->pdo->prepare( 'INSERT INTO schedules
+			(schedule_id, user_id, title todo_time, detail, posted_at)
+			VALUES(:scheduleId, :userId, :title, :todoTime, :detail, :postedAt);');
 
-		$stmt->bindValue(':scheduleId',);
-		$stmt->bindValue(':userId',);
+		$plainText = $time . $title . $detail;
+
+		$stmt->bindValue(':scheduleId', hash('adler32', $plainText, false));
+		$stmt->bindValue(':userId', $userId);
 		$stmt->bindValue(':title', $title);
-		$stmt->bindValue(':todotime', $time);
+		$stmt->bindValue(':todoTime', $time);
 		$stmt->bindValue(':detail', $detail);
+		$stmt->bindValue(':posted_at', date('Y-m-d H:i:s'));
+
+		$stmt->execute();
 	}
 
 }

@@ -3,26 +3,37 @@
 require_once('./MessagingAPI.php');
 require_once('./DbManager.php');
 
-
 $channelAccessToken = getenv('ACCESS_TOKEN');
-$channelSecret = getenv('CHENNEL_SECRET');
+$channelSecret = getenv('CHANNEL_SECRET');
 
 $dbm = new DbManager();
 $client = new MessagingAPI($channelAccessToken, $channelSecret);
 
-$event = $dbm->getEvent();
+$event = $client->getEvent();
 
-if(!$event['type'] == 'message'){
-	exit();
-}
+//MessagingAPIのテスト用コード
+$id = 'U302427d6207fd5906e68e7d1d172bad5';
+$userId = $event['source']['userId'];
+$message = $event['message']['text'];
+$client->pushMessage($id, $userId);
 
-$lineId = $event['replyToken']['userId'];
-$message = $event['message'];
-$text = $message['text'];
+http_response_code(200);
+
+
+
+$lineId = $event['source']['userId'];
+$message = $event['message']['text'];
 
 //ユーザーをDB問い合わせ
 $dbm->checkUser($lineId);
 
+//テキストをパースする
+$data = parseText($message);
+
+//データベースに予定データを登録する
+$dbm->addSchedule($data['title'], $data['time'], $data['ditail']);
+
+*/
 
 /*
 	タイトル、日時、詳細を分ける（改行区切り→各変数に格納）
