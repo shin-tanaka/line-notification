@@ -6,8 +6,8 @@ class DbManager{
 	private $pdo;
 
 	public function __construct(){
-		$this->$dbinfo = parse_url(getenv('DATABASE_URL'));
-		connectPostgreSQL(
+		$this->dbinfo = parse_url(getenv('DATABASE_URL'));
+		$this->connectPostgreSql(
 			$this->dbinfo['host'],
 			substr($this->dbinfo['path'], 1),
 			$this->dbinfo['user'],
@@ -53,21 +53,23 @@ class DbManager{
 	*/
 	public function checkUser($lineId){
 
-		$findUserSql = 'SELECT * FROM user WHERE line_id= :lineId;';
+		$findUserSql = 'SELECT * FROM users WHERE line_id = :lineId;';
 
 		$stmt = $this->pdo->prepare($findUserSql);
 		$stmt->bindValue(':lineId', $lineId);
-		$stmt->fetch();
+		$stmt->execute();
+		$result = $stmt->fetch(PDO::FETCH_ASSOC);
 
 		//新規ユーザー登録
-		if(empty($stmt)){
-			addUser($line_id);
+		if(empty($result)){
+			$this->addUser($lineId);
 			$stmt = $this->pdo->prepare($findUserSql);
-		$stmt->bindValue(':lineId', $lineId);
-		$stmt->fetch();
 		}
+		$stmt->bindValue(':lineId', $lineId);
+		$stmt->execute();
+		$result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-		return $stmt['line_id'];
+		return $result['line_id'];
 	}
 
 	/*

@@ -15,18 +15,18 @@ class MessagingAPI{
 	public function getEvent(){
 
 		//HTTP POST application/json 形式のリクエストを受信
-		if($_SERVER['REQUEST_METHOD'] == 'POST'
-		 && $media $_SERVER['CONTENT_TYPE'] == 'application/json'){
+		if($_SERVER['REQUEST_METHOD'] == 'POST'){
 			$message = file_get_contents('php://input');
 		}
 
 		//署名検証を行う 不正ならexit()
 		if(!$this->checkHash($message, $_SERVER['HTTP_X_LINE_SIGNATURE'])){
+			error_log('Failed to match Signature.');
 			exit();
 		}
 
 		$data = json_decode($message, true);
-		return $data['events'];
+		return $data['events'][0];
 	}
 
 
@@ -63,7 +63,7 @@ class MessagingAPI{
 
 
 	private function checkHash($body, $line_signature){
-		$hash = hash_hmac('sha256', $body, $this->channelSecret, ture);
+		$hash = hash_hmac('sha256', $body, $this->channelSecret, true);
 		$signature = base64_encode($hash);
 		return hash_equals($signature, $line_signature);
 	}

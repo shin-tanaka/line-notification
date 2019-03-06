@@ -9,24 +9,25 @@ $channelSecret = getenv('CHANNEL_SECRET');
 $dbm = new DbManager();
 $client = new MessagingAPI($channelAccessToken, $channelSecret);
 
-$event = $client->getEvent();
-
-$lineId = $event['source']['userId'];
-$message = $event['message']['text'];
+//データ取得
+$data = $client->getEvent();
+$lineId = $data['source']['userId'];
+$message = $data['message']['text'];
 
 //ユーザーをDB問い合わせ
-$dbm->checkUser($lineId);
+$result = $dbm->checkUser($lineId);
 
 //テキストをパースする
 $data = parseText($message);
 
 //データベースに予定データを登録する
-$dbm->addSchedule($data['title'], $data['time'], $data['ditail']);
+$dbm->addSchedule($lineId, $data['title'], $data['time'], $data['detail']);
 
-*/
+//処理完了通知
+$client->pushMessage($lineId, '>>>DONE');
 
 /*
-	タイトル、日時、詳細を分ける（改行区切り→各変数に格納）
+	タイトル、日時、詳細を分ける（改行区切り→各変数に格納)
 */
 function parseText($text){
 	$args = explode(PHP_EOL, $text);
@@ -43,8 +44,10 @@ function parseText($text){
 	$data = [
 				'title' => $title,
 				'time'  => $time,
-				'detail'=> $detail;
-			]
+				'detail'=> $detail
+			];
+
+	return $data;
 }
 
 /*
