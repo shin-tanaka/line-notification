@@ -48,7 +48,7 @@ class DbManager{
 
 	/*
 		ユーザーをDBに問い合わせて、
-			ユーザーが存在  :そのままline上のユーザーIDを返す
+			ユーザーが存在  :ユーザーID(通し番号)を返す
 			存在しない場合 :DBに登録した上で、ユーザIDを返す
 	*/
 	public function checkUser($lineId){
@@ -69,7 +69,7 @@ class DbManager{
 		$stmt->execute();
 		$result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-		return $result['line_id'];
+		return $result['user_id'];
 	}
 
 	/*
@@ -101,19 +101,22 @@ class DbManager{
 	*/
 	public function addSchedule($userId, $title, $time, $detail){
 		$stmt = $this->pdo->prepare( 'INSERT INTO schedules
-			(schedule_id, user_id, title todo_time, detail, posted_at)
+			(schedule_id, user_id, title, todo_time, detail, posted_at)
 			VALUES(:scheduleId, :userId, :title, :todoTime, :detail, :postedAt);');
 
-		$plainText = $time . $title . $detail;
+		$plainText = $time . $title . $detail . $userId;
+		$hash = hash('adler32', $plainText, false);
 
-		$stmt->bindValue(':scheduleId', hash('adler32', $plainText, false));
+		$stmt->bindValue(':scheduleId', $hash);
 		$stmt->bindValue(':userId', $userId);
 		$stmt->bindValue(':title', $title);
 		$stmt->bindValue(':todoTime', $time);
 		$stmt->bindValue(':detail', $detail);
-		$stmt->bindValue(':posted_at', date('Y-m-d H:i:s'));
+		$stmt->bindValue(':postedAt', date('Y-m-d H:i:s'));
 
 		$stmt->execute();
+
+		return $hash;
 	}
 
 }
