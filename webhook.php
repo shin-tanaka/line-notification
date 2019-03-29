@@ -15,29 +15,45 @@ $lineId = $data['source']['userId'];
 $message = $data['message']['text'];
 
 //ユーザーをDB問い合わせ
-$result = $dbm->checkUser($lineId);
+$userId = $dbm->checkUser($lineId);
 
 //テキストをパースする
 $data = parseText($message);
 
 //データベースに予定データを登録する
-$dbm->addSchedule($lineId, $data['title'], $data['time'], $data['detail']);
+$result = $dbm->addSchedule($userId, $data['title'], $data['time'], $data['detail']);
 
-//処理完了通知
-$client->pushMessage($lineId, '>>>DONE');
+if(empty($result)){
+	$reply = "スケジュールを正常に登録できませんでした\n書式や、すでに予定が登録されていないか確認の上\nもう一度登録し直してください";
+}
+else{
+	$reply = "=======登録完了========\n以下の内容での登録が完了しました。\n\n";
+	$reply.= "件名:" . $data['title']  . "\n";
+	$reply.= "日時:" . $data['time']   . "\n";
+	$reply.= "詳細:" . $data['detail'] . "\n\n";
+	$reply.= "-----------------------------------\n";
+	$reply.= "問い合わせ番号:" . $result;
+}
 
-/*
-	タイトル、日時、詳細を分ける（改行区切り→各変数に格納)
-*/
+//処理結果通知
+$client->pushMessage($lineId, $reply);
+
+/**
+ * タイトル、日時、詳細を分ける（改行区切り→各変数に格納)
+ *
+ * @param text LINEで与えられる改行区切りの文章
+ * @return タイトル、予定時間、詳細が格納された配列
+ */
 function parseText($text){
 	$args = explode(PHP_EOL, $text);
 	$title = $args[0];
 	$time = convertTime($args[1]);
 	$detail = '';
 
-	if(2 < count($args)){
+	//詳細部分(任意)の行を1行にまとめる
+	if(3 <= count($args)){
 		for ($i=2; $i < count($args); $i++) {
-			$detail .= $args[i] . ' ';
+			$detail .= $args[$i] . ' ';
 		}
 	}
 
@@ -50,9 +66,12 @@ function parseText($text){
 	return $data;
 }
 
-/*
-	※ISO8601のフォーマットに則って、予め下記のように整形して渡す
-	2018年10月10日17時30分0秒日本時間:[2018-10-10T17:30:00+0900]
+/**
+ * ※ISO8601のフォーマットに則って、予め下記のように整形して渡す
+ * 2018年10月10日17時30分0秒日本時間:[2018-10-10T17:30:00+0900]
+ *
+ * @param  string $str 時刻情報のテキスト(年を省略すると自動的に現在の年になる)
+ * @return string ISO8601フォーマットに整形された時刻情報
 */
 function convertTime($str){
 
