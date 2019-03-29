@@ -119,4 +119,25 @@ class DbManager{
 		return $hash;
 	}
 
+	/**
+	 * DB上からユーザーデータを削除する
+	 *
+	 * @param userId ユーザーID(LINEのIDではない)
+	 */
+	public function deleteUser($userId){
+		$stmt = $this->pdo->prepare('DELETE FROM users WHERE user_id = :userId');
+		$stmt->bindValue(':userId', $userId);
+		$stmt->execute();
+	}
+
+	/**
+	 * DB上からスケジュールデータを削除する
+	 *
+	 * @param scheduleId スケジュールID
+	 */
+	public function deleteSchedule($scheduleId){
+		$stmt = $this->pdo->prepare('DELETE FROM schedules WHERE schedule_id = :scheduleId');
+		$stmt->bindValue(':scheduleId', $scheduleId);
+		$stmt->execute();
+	}
 }
