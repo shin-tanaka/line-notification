@@ -10,7 +10,8 @@ LINEのBOTに対して
 ## 使い方
 
 [動作デモムービーはこちらから(Google Drive共有ページに飛びます)](https://drive.google.com/file/d/1h97PMX_6NUH3kkkUVMy4kAvol_h9EuCX/view?usp=sharing)  
-動画制作には[Shotcut](https://www.shotcut.org/)を利用させていただきました  
+画面キャプチャーには[GeForce ShadowPlay](https://www.nvidia.com/ja-jp/geforce/geforce-experience/shadowplay/)、
+動画編集には[Shotcut](https://www.shotcut.org/)を利用させていただきました 。
 
 BOTに対して
 * 件名※
@@ -34,7 +35,7 @@ BOTに対して
 Heroku Schedulerを使用しているため、  
 毎時00,10,20,30,40,50分のタイミングで直前10分以内の予定が通知されます
 
-現在は問い合わせNoを利用する機能は実装されていません。 
+現在は問い合わせNoを利用する機能は実装されていません。   
 今後、予定の取り消しや、予定の一覧表示などの機能を追加する予定です。
 
 ## 開発環境等
