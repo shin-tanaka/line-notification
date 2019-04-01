@@ -9,7 +9,8 @@ LINEのBOTに対して
 
 ## 使い方
 
-[動作デモムービーはこちらから(Google Drive共有ページに飛びます)](https://drive.google.com/file/d/1h97PMX_6NUH3kkkUVMy4kAvol_h9EuCX/view?usp=sharing)
+[動作デモムービーはこちらから(Google Drive共有ページに飛びます)](https://drive.google.com/file/d/1h97PMX_6NUH3kkkUVMy4kAvol_h9EuCX/view?usp=sharing)  
+動画制作には[Shotcut](https://www.shotcut.org/)を利用させていただきました  
 
 BOTに対して
 * 件名※
